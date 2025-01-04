@@ -12,7 +12,7 @@ if (!isset($_SESSION['username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homepage</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="feature2.css">
 </head>
 <body>
     <div class="sidebar">
@@ -35,15 +35,19 @@ if (!isset($_SESSION['username'])) {
             </nav>
         </header>
     </div>
-    <div class="description">
-        <section class="hero">
-            <h2>Best Tools for Language Learning</h2>
-            <h3>Learn, speak and connect with confidence.</h3>
-            <p>Experience personalized learning with AI tools that enhance 
-            skills and provide feedback. Tailored lessons adapt to your style.
-            Join us and start your journey to fluency today!</p>
-        </section>
+    <section class="customized-reviewer">
+    <h1 class="main-title">Costumized Reviewer</h1>
+    <h2 class="subtitle">Welcome to Your Personalized Learning Hub!</h2>
+    <p class="description">
+        Unlock your potential with our Customized Reviewer, offering tailored practice materials to enhance your learning journey.
+    </p>
+    <button class="create-design-button">+ Create Design</button>
+    <div class="templates">
+        <img src="image/4.png" alt="Reviewer Template" class="template-image">
+        <img src="image/5.png" alt="Website Inspired Template" class="template-image">
+        <img src="image/6.png" alt="Aesthetic Reviewers" class="template-image">
     </div>
+</section>
 
     <script>
         function logout() {

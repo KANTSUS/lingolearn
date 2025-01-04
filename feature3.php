@@ -12,7 +12,7 @@ if (!isset($_SESSION['username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homepage</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="feature3.css">
 </head>
 <body>
     <div class="sidebar">
@@ -35,15 +35,32 @@ if (!isset($_SESSION['username'])) {
             </nav>
         </header>
     </div>
-    <div class="description">
-        <section class="hero">
-            <h2>Best Tools for Language Learning</h2>
-            <h3>Learn, speak and connect with confidence.</h3>
-            <p>Experience personalized learning with AI tools that enhance 
-            skills and provide feedback. Tailored lessons adapt to your style.
-            Join us and start your journey to fluency today!</p>
-        </section>
+    <div class="quizzes-section">
+    <h2>Quizzes</h2>
+    <p>Take different types of quizzes to test your knowledge.</p>
+    <div class="quiz-grid">
+        <div class="quiz-card">
+            <div class="quiz-icon verbs"></div>
+            <h3>VERBS</h3>
+            <p>Test your proficiency with verbs</p>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-icon grammar"></div>
+            <h3>GRAMMAR</h3>
+            <p>Test how good your grammar is</p>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-icon numbers"></div>
+            <h3>NUMBERS AND COUNTING</h3>
+            <p>Test yourself if you have memorized counting in various languages</p>
+        </div>
+        <div class="quiz-card">
+            <div class="quiz-icon sentences"></div>
+            <h3>SIMPLE SENTENCES</h3>
+            <p>Test to see if you can compose sentences in various languages</p>
+        </div>
     </div>
+</div>
 
     <script>
         function logout() {
@@ -68,3 +85,4 @@ if (!isset($_SESSION['username'])) {
     </script>
 </body>
 </html>
+s
