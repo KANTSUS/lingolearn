@@ -20,7 +20,7 @@ if (!isset($_SESSION['username'])) {
         <ul>
             <li><button id="go-to-feature1">Feature1</button></li>
             <li><button id="go-to-feature2">Feature2</button></li>
-            <li><button id="go-to-feature3">Feature3</button></li>
+            <li><button id="go-to-feature3">AI Essay Feedback</button></li>
         </ul>
         <button id="logout-button" onclick="logout()">Logout</button>
     </div>

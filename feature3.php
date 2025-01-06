@@ -20,7 +20,7 @@ if (!isset($_SESSION['username'])) {
         <ul>
             <li><button id="go-to-feature1">Feature1</button></li>
             <li><button id="go-to-feature2">Feature2</button></li>
-            <li><button id="go-to-feature3">Feature3</button></li>
+            <li><button id="go-to-feature3">AI Essay Feedback</button></li>
         </ul>
         <button id="logout-button" onclick="logout()">Logout</button>
     </div>
@@ -36,31 +36,15 @@ if (!isset($_SESSION['username'])) {
         </header>
     </div>
     <div class="quizzes-section">
-    <h2>Quizzes</h2>
-    <p>Take different types of quizzes to test your knowledge.</p>
-    <div class="quiz-grid">
-        <div class="quiz-card">
-            <div class="quiz-icon verbs"></div>
-            <h3>VERBS</h3>
-            <p>Test your proficiency with verbs</p>
-        </div>
-        <div class="quiz-card">
-            <div class="quiz-icon grammar"></div>
-            <h3>GRAMMAR</h3>
-            <p>Test how good your grammar is</p>
-        </div>
-        <div class="quiz-card">
-            <div class="quiz-icon numbers"></div>
-            <h3>NUMBERS AND COUNTING</h3>
-            <p>Test yourself if you have memorized counting in various languages</p>
-        </div>
-        <div class="quiz-card">
-            <div class="quiz-icon sentences"></div>
-            <h3>SIMPLE SENTENCES</h3>
-            <p>Test to see if you can compose sentences in various languages</p>
+    <h2>AI Essay Feedback</h2>
+    <div class="container">
+        <textarea id="essayInput" placeholder="Paste your essay here..."></textarea>
+        <button id="submitButton">Check Essay</button>
+        <div id="feedbackSection" class="feedback">
+            <h2>Feedback</h2>
+            <p id="feedbackText">Your feedback will appear here.</p>
         </div>
     </div>
-</div>
 
     <script>
         function logout() {
@@ -85,4 +69,3 @@ if (!isset($_SESSION['username'])) {
     </script>
 </body>
 </html>
-s
