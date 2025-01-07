@@ -4,6 +4,12 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit();
 }
+if (isset($_POST['guest_login'])) {
+   
+    $_SESSION['username'] = "Guest_" . rand(1000, 9999); 
+    header("Location: home.php");
+    exit();
+}
 
 ?>
 <!DOCTYPE html>
