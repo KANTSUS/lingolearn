@@ -12,7 +12,7 @@
     <div class="about-us-container">
         <div class="content">
             <h1>About Us</h1>
-            <p>Welcome to LingoLearn, where language learning meets innovation! Our mission is to empower individuals from all walks of life to master new languages through a personalized, engaging, and immersive experience.</p>
+            <p>Welcome to LingoLearn, where language learning meets innovation! Our mission is to empower individuals from all walks of life to master english through a personalized, engaging, and immersive experience.</p>
             
             <div class="navigation">
                 <button onclick="navigateToPage('home')">Home</button>
