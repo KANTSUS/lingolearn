@@ -4,14 +4,13 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit();
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
+    <title>AI Essay Feedback</title>
     <link rel="stylesheet" href="feature3.css">
 </head>
 <body>
@@ -35,15 +34,19 @@ if (!isset($_SESSION['username'])) {
             </nav>
         </header>
     </div>
+
     <div class="quizzes-section">
-    <h2>AI Essay Feedback</h2>
-    <div class="container">
-        <textarea id="essayInput" placeholder="Paste your essay here..."></textarea>
-        <button id="submitButton">Check Essay</button>
-        <div id="feedbackSection" class="feedback">
-            <h2>Feedback</h2>
-            <p id="feedbackText">Your feedback will appear here.</p>
+        <h2>AI Essay Feedback</h2>
+        <div class="container">
+            <div>
+                <textarea id="essayInput" rows="20" cols="100" placeholder="Paste your essay here..."></textarea>
+            </div>
+            <div class="feedback">
+                <h2>Feedback</h2>
+                <p id="feedbackText">Your feedback will appear here.</p>
+            </div>
         </div>
+        <button id="submitButton">Check Essay</button>
     </div>
 
     <script>
@@ -52,20 +55,49 @@ if (!isset($_SESSION['username'])) {
         }
 
         document.getElementById('go-to-feature1').addEventListener('click', function() {
-        window.location.href = 'feature1.php';
-    });
+            window.location.href = 'feature1.php';
+        });
 
-    document.getElementById('go-to-feature2').addEventListener('click', function() {
-        window.location.href = 'feature2.php';
-    });
+        document.getElementById('go-to-feature2').addEventListener('click', function() {
+            window.location.href = 'feature2.php';
+        });
 
-    document.getElementById('go-to-feature3').addEventListener('click', function() {
-        window.location.href = 'feature3.php';
-    });
+        document.getElementById('go-to-feature3').addEventListener('click', function() {
+            window.location.href = 'feature3.php';
+        });
 
-    function goToHome() {
-        window.location.href = 'home.php';
-    }
+        // Simulated AI feedback function (replace with actual API call later)
+        document.getElementById('submitButton').addEventListener('click', function() {
+            var essayText = document.getElementById('essayInput').value;
+
+            if (essayText.trim() === "") {
+                alert("Please enter an essay first.");
+                return;
+            }
+
+            // Simulating AI feedback (you will replace this with actual API integration)
+            var feedback = generateAIFeedback(essayText);
+
+            // Update the feedback section
+            document.getElementById('feedbackText').innerText = feedback;
+        });
+
+        // Mock function to simulate AI feedback
+        function generateAIFeedback(essay) {
+            // Simulate some basic feedback for now
+            var feedback = "Your essay is well-written! Here are some suggestions:\n\n";
+
+            if (essay.length < 50) {
+                feedback += "- Try adding more content to provide a detailed explanation.\n";
+            }
+            if (essay.includes("I think")) {
+                feedback += "- Avoid using phrases like 'I think' for a more formal tone.\n";
+            }
+            if (essay.includes("therefore")) {
+                feedback += "- 'Therefore' is a good connector word, but ensure it's used in the right context.\n";
+            }
+            return feedback;
+        }
     </script>
 </body>
 </html>
