@@ -10,7 +10,7 @@ if (!isset($_SESSION['username'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade 7 - Intermediate Lessons</title>
+    <title>Grade 8 - Intermediate Lessons</title>
     <link rel="stylesheet" href="/lingolearn/lessons/grade7.css">
 </head>
 <body>
@@ -26,15 +26,15 @@ if (!isset($_SESSION['username'])) {
 
     <div class="main-content">
         <header>
-            <h1>Grade 7 - Intermediate Lessons</h1>
+            <h1>Grade 8 - Intermediate Lessons</h1>
         </header>
         <section class="lesson-content">
-            <p>Welcome to Grade 7 Intermediate Lessons. Let's start learning!</p>
+            <p>Welcome to Grade 8 Intermediate Lessons. Let's start learning!</p>
 
             <!-- Links to other grades in Beginner Lessons -->
             <h3>Other Grades</h3>
             <ul>
-                <li><a href="/lingolearn/lessons/intermediate/grade8.php">Grade 8</a></li>
+                <li><a href="/lingolearn/lessons/intermediate/grade7.php">Grade 7</a></li>
                 <li><a href="/lingolearn/lessons/intermediate/grade9.php">Grade 9</a></li>
                 <li><a href="/lingolearn/lessons/intermediate/grade10.php">Grade 10</a></li>
             </ul>
@@ -42,8 +42,8 @@ if (!isset($_SESSION['username'])) {
             <!-- Links to Intermediate and Advanced Lessons -->
             <h3>Other Lesson Types</h3>
             <ul>
-                <li><a href="/lingolearn/lessons/basics/grade7.php">Basic Grade 7</a></li>
-                <li><a href="/lingolearn/lessons/advanced/grade7.php">Advanced Grade 7</a></li>
+                <li><a href="/lingolearn/lessons/basics/grade8.php">Basic Grade 8</a></li>
+                <li><a href="/lingolearn/lessons/advanced/grade8.php">Advanced Grade 8</a></li>
             </ul>
 
             <button onclick="goBackToFeature1()">Go Back to Feature 1</button>

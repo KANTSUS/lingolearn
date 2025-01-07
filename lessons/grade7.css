@@ -1,0 +1,158 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: #2f3b52;
+    color: white;
+    padding-top: 20px;
+    height: 100vh;
+    position: fixed;
+}
+
+.sidebar h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.sidebar ul li {
+    padding: 10px;
+    text-align: center;
+}
+
+.sidebar button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.sidebar button:hover {
+    background-color: #45a049;
+}
+
+#logout-button {
+    background-color: #f44336;
+}
+
+#logout-button:hover {
+    background-color: #d32f2f;
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    width: 100%;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 15px 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Lesson Content Section Styles */
+.lesson-content {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.lesson-content h3 {
+    font-size: 20px;
+    margin-top: 30px;
+    color: #333;
+}
+
+.lesson-content ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.lesson-content ul li {
+    margin-bottom: 10px;
+}
+
+.lesson-content ul li a {
+    text-decoration: none;
+    color: #4CAF50;
+    font-size: 16px;
+}
+
+.lesson-content ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Button Styles */
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px;
+    }
+
+    .lesson-content {
+        margin-top: 20px;
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+
+    .lesson-content h3 {
+        font-size: 18px;
+    }
+
+    button {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px;
+    }
+}
