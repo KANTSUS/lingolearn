@@ -2,8 +2,8 @@
 session_start();
 $host = 'localhost';
 $db = 'lingolearn';
-$user = 'root'; // Replace with your database username
-$password = ''; // Replace with your database password
+$user = 'root'; 
+$password = ''; 
 
 $conn = new mysqli($host, $user, $password, $db);
 
@@ -13,7 +13,7 @@ if ($conn->connect_error) {
 
 $error_message = "";
 
-// Handle Account Creation
+
 if (isset($_POST['create_account'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -27,7 +27,7 @@ if (isset($_POST['create_account'])) {
     }
 }
 
-// Handle Login
+
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -47,6 +47,12 @@ if (isset($_POST['login'])) {
     } else {
         $error_message = "Invalid username or password.";
     }
+}
+if (isset($_POST['guest_login'])) {
+   
+    $_SESSION['username'] = "Guest_" . rand(1000, 9999); 
+    header("Location: home.php");
+    exit();
 }
 ?>
 
@@ -70,15 +76,7 @@ if (isset($_POST['login'])) {
         </p>
     </div>
 
-    <section class="login-form">
-        <h1 id="form-title" class="form-title">Log In</h1>
-
-        <!-- Display error messages -->
-        <?php if (!empty($error_message)): ?>
-            <p id="error-message" class="error-message"><?php echo $error_message; ?></p>
-        <?php endif; ?>
-
-        <form method="POST" id="login-form">
+    <form method="POST" id="login-form">
             <div class="input-field">
                 <input type="text" name="username" placeholder="Username" required>
             </div>
@@ -92,8 +90,9 @@ if (isset($_POST['login'])) {
                 <a href="#" class="forgot-password" onclick="showForgotPassword()">Forgot password?</a>
             </div>
             <button type="submit" name="login" class="login-button">Log In</button>
+            <button type="submit" name="guest_login" class="guest-login-button">Guest Login</button>
             <a href="#" class="create-account" onclick="showCreateAccount()">Create Account</a>
-        </form>
+    </form>
 
         <form method="POST" id="create-account-form" style="display: none;">
             <div class="input-field">
