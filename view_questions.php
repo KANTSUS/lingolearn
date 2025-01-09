@@ -34,10 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Fetch all questions from the database
 $sql = "SELECT * FROM questions";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
+
+// Debugging: Check if any questions are fetched
+if ($result->num_rows === 0) {
+    echo "<p>No questions found in the database.</p>";
+}
 ?>
 
 <!DOCTYPE html>

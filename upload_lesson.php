@@ -24,30 +24,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
     $questionType = $_POST['questionType'];
     $choices = isset($_POST['choices']) ? $_POST['choices'] : [];
     $correctAnswers = isset($_POST['correctAnswer']) ? $_POST['correctAnswer'] : [];
+    
+    // Flag to show the success popup
+    $questionAdded = false;
 
     foreach ($questions as $index => $questionText) {
         $question_type = $questionType[$index];
 
-        if ($question_type == "multiple_choice") {
-            // Convert choices array to a comma-separated string
-            $choicesList = implode(", ", $choices[$index]);
-            $correctAnswer = $correctAnswers[$index];  // Correct answer choice
+        // Initialize values for choices and correct answer
+        $choicesList = '';
+        $correctAnswer = '';
 
-            // Insert multiple-choice question into the database
+        // Handle multiple-choice questions
+        if ($question_type == "multiple_choice") {
+            if (isset($choices[$index])) {
+                // Convert choices array to a string
+                $choicesList = implode(", ", $choices[$index]);
+            }
+
+            if (isset($correctAnswers[$index])) {
+                // Get the correct answer choice
+                $correctAnswer = $correctAnswers[$index];
+            }
+
+            // Prepare statement for multiple-choice question
             $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type, choices, correct_answer) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $questionText, $question_type, $choicesList, $correctAnswer);
         } elseif ($question_type == "fill_in_the_blank") {
-            // Insert fill-in-the-blank question into the database
+            // Prepare statement for fill-in-the-blank question
             $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type) VALUES (?, ?)");
             $stmt->bind_param("ss", $questionText, $question_type);
         }
 
         // Execute statement and check for errors
         if ($stmt->execute()) {
-            echo "<div class='success'>Question added successfully!</div>";
+            $questionAdded = true;  // Flag to show success popup
         } else {
             echo "<div class='error'>Error: " . $conn->error . "</div>";
         }
+    }
+
+    // Close the statement after all iterations
+    if (isset($stmt)) {
         $stmt->close();
     }
 }
@@ -60,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Lesson and Questions</title>
     <style>
+        /* Styling for the page */
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
@@ -115,6 +134,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
+        /* Popup Styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 9999;
+        }
+
+        .popup .popup-content {
+            margin-bottom: 20px;
+        }
+
+        .popup .btn-close {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup .btn-close:hover {
+            background-color: #4cae4c;
+        }
     </style>
 </head>
 <body>
@@ -157,6 +208,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
         </form>
     </div>
     <a href="home.php" class="back-button">Back to Homepage</a>
+
+    <!-- Popup message -->
+    <?php if (isset($questionAdded) && $questionAdded): ?>
+        <div class="popup" id="popup">
+            <div class="popup-content">
+                <h2>Question added successfully!</h2>
+                <p>Your questions have been successfully added.</p>
+            </div>
+            <button class="btn-close" onclick="closePopup()">Go to Homepage</button>
+        </div>
+    <?php endif; ?>
+
     <script>
         function showFields(select) {
             const container = select.closest('.question-container');
@@ -174,6 +237,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
             newQuestion.innerHTML = questionSection.innerHTML;
             questionSection.appendChild(newQuestion);
         }
+
+        <?php if (isset($questionAdded) && $questionAdded): ?>
+            window.onload = function() {
+                document.getElementById('popup').style.display = 'block';
+            };
+
+            function closePopup() {
+                window.location.href = 'home.php'; // Redirect to homepage
+            }
+        <?php endif; ?>
     </script>
 </body>
 </html>
