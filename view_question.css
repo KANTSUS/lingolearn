@@ -1,72 +1,75 @@
-/* Styles for both view_questions.php and view_student_answers.php */
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-}
-
-.container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    text-align: center;
-    color: #333;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.table th,
-.table td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-
-.table th {
-    background-color: #f8f9fa;
-    font-weight: bold;
-}
-
-.table tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-.table tr:hover {
-    background-color: #f1f1f1;
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-p {
+header {
     text-align: center;
-    color: #666;
+    margin-bottom: 20px;
 }
 
-.back-button {
-    display: inline-block;
-    margin-top: 20px;
-    text-decoration: none;
-    color: white;
-    background-color: #007bff;
-    padding: 10px 20px;
+h1 {
+    color: #4CAF50;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Question Styles */
+.question-container {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
     border-radius: 5px;
-    text-align: center;
-    font-size: 16px;
-    display: block;
-    width: 200px;
-    margin-left: auto;
-    margin-right: auto;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.back-button:hover {
-    background-color: #0056b3;
+.question-container p {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.question-container input[type="text"] {
+    padding: 8px;
+    width: 100%;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.question-container label {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Submit Button */
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+/* Layout */
+main {
+    margin-top: 30px;
 }

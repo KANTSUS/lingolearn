@@ -7,11 +7,6 @@ if (!isset($_SESSION['username'])) {
 
 $display_name = $_SESSION['username'];
 
-// Ensure teacher is logged in and retrieve display name with prefix
-if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher') {
-    $display_name = $_SESSION['prefix'] . ' ' . $display_name;
-}
-
 // Connect to the database (update with your actual database credentials)
 $servername = "localhost";
 $username = "root";
@@ -23,76 +18,37 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if form is submitted for file upload or question addition
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $grade = $_POST['grade'];
-    $lesson_type = $_POST['lessonType'];
+// Check if form is submitted for question addition
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && isset($_POST['questionType'])) {
+    $questions = $_POST['questionText'];
+    $questionType = $_POST['questionType'];
+    $choices = isset($_POST['choices']) ? $_POST['choices'] : [];
+    $correctAnswers = isset($_POST['correctAnswer']) ? $_POST['correctAnswer'] : [];
 
-    // Process file upload with validation
-    if (isset($_FILES['lessonFile'])) {
-        $lessonFile = $_FILES['lessonFile'];
-        $fileName = $lessonFile['name'];
-        $fileTmpName = $lessonFile['tmp_name'];
-        $fileSize = $lessonFile['size'];
-        $fileError = $lessonFile['error'];
+    foreach ($questions as $index => $questionText) {
+        $question_type = $questionType[$index];
 
-        // Validate file type (only allow PDF and DOCX for now)
-        $allowedExtensions = ['pdf', 'docx'];
-        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-        if (!in_array(strtolower($fileExtension), $allowedExtensions)) {
-            echo "<div class='error'>Invalid file type. Only PDF and DOCX files are allowed.</div>";
-        } elseif ($fileSize > 5000000) { // 5MB limit
-            echo "<div class='error'>File is too large. Maximum allowed size is 5MB.</div>";
+        if ($question_type == "multiple_choice") {
+            // Convert choices array to a comma-separated string
+            $choicesList = implode(", ", $choices[$index]);
+            $correctAnswer = $correctAnswers[$index];  // Correct answer choice
+
+            // Insert multiple-choice question into the database
+            $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type, choices, correct_answer) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $questionText, $question_type, $choicesList, $correctAnswer);
+        } elseif ($question_type == "fill_in_the_blank") {
+            // Insert fill-in-the-blank question into the database
+            $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type) VALUES (?, ?)");
+            $stmt->bind_param("ss", $questionText, $question_type);
+        }
+
+        // Execute statement and check for errors
+        if ($stmt->execute()) {
+            echo "<div class='success'>Question added successfully!</div>";
         } else {
-            if ($fileError === 0) {
-                $fileDestination = 'uploads/' . $fileName;
-                move_uploaded_file($fileTmpName, $fileDestination);
-
-                // Insert file upload info into the database using prepared statement
-                $stmt = $conn->prepare("INSERT INTO lessons (grade, lesson_type, file_name) VALUES (?, ?, ?)");
-                $stmt->bind_param("iss", $grade, $lesson_type, $fileName);
-                if ($stmt->execute()) {
-                    echo "<div class='success'>Lesson file uploaded successfully!</div>";
-                } else {
-                    echo "<div class='error'>Error: " . $conn->error . "</div>";
-                }
-                $stmt->close();
-            } else {
-                echo "<div class='error'>There was an error uploading the file.</div>";
-            }
+            echo "<div class='error'>Error: " . $conn->error . "</div>";
         }
-    }
-
-    // Process text entry for questions with prepared statements
-    if (isset($_POST['questionText']) && isset($_POST['questionType'])) {
-        $questions = $_POST['questionText'];
-        $questionType = $_POST['questionType'];
-        $choices = isset($_POST['choices']) ? $_POST['choices'] : [];
-        $correctAnswers = isset($_POST['correctAnswer']) ? $_POST['correctAnswer'] : [];
-
-        foreach ($questions as $index => $questionText) {
-            if ($questionType[$index] == "multiple_choice") {
-                $choicesList = implode(", ", $choices[$index]);
-                $correctAnswer = $correctAnswers[$index];
-
-                // Insert multiple choice question into database using prepared statements
-                $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type, grade, lesson_type, choices, correct_answer) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("ssis", $questionText, $questionType[$index], $grade, $lesson_type, $choicesList, $correctAnswer);
-                if ($stmt->execute()) {
-                    echo "<div class='success'>Multiple choice question added successfully!</div>";
-                } else {
-                    echo "<div class='error'>Error: " . $conn->error . "</div>";
-                }
-            } else if ($questionType[$index] == "fill_in_the_blank") {
-                $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type, grade, lesson_type) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("ssis", $questionText, $questionType[$index], $grade, $lesson_type);
-                if ($stmt->execute()) {
-                    echo "<div class='success'>Fill in the blank question added successfully!</div>";
-                } else {
-                    echo "<div class='error'>Error: " . $conn->error . "</div>";
-                }
-            }
-        }
+        $stmt->close();
     }
 }
 ?>
@@ -165,24 +121,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container">
         <h1>Upload Lesson and Questions</h1>
         
-        <h2>Upload Lesson</h2>
-        <form action="" method="post" enctype="multipart/form-data">
-            <label for="lessonFile">Upload Lesson File (PDF, DOCX):</label>
-            <input type="file" name="lessonFile" id="lessonFile" required>
-            
-            <label for="lessonType">Select Lesson Type:</label>
-            <select name="lessonType" id="lessonType" required>
-                <option value="basics">Basics</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-            </select>
-            
-            <label for="grade">Grade Level:</label>
-            <input type="number" name="grade" id="grade" min="1" max="12" required>
-            
-            <button type="submit" class="btn">Upload Lesson</button>
-        </form>
-
         <h2>Add Questions</h2>
         <form action="" method="post">
             <div id="questionsSection">
@@ -218,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button type="submit" class="btn">Submit Questions</button>
         </form>
     </div>
-
+    <a href="home.php" class="back-button">Back to Homepage</a>
     <script>
         function showFields(select) {
             const container = select.closest('.question-container');
@@ -228,18 +166,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             fillInTheBlank.style.display = select.value === 'fill_in_the_blank' ? 'block' : 'none';
             multipleChoice.style.display = select.value === 'multiple_choice' ? 'block' : 'none';
         }
-
+        
         function addQuestion() {
-            const questionsSection = document.getElementById('questionsSection');
-            const newQuestion = document.querySelector('.question-container').cloneNode(true);
-
-            // Reset values in the cloned question
-            newQuestion.querySelectorAll('input').forEach(input => input.value = '');
-            newQuestion.querySelectorAll('select').forEach(select => select.value = '');
-            newQuestion.querySelector('.fill-in-the-blank').style.display = 'none';
-            newQuestion.querySelector('.multiple-choice').style.display = 'none';
-
-            questionsSection.appendChild(newQuestion);
+            const questionSection = document.getElementById("questionsSection");
+            const newQuestion = document.createElement("div");
+            newQuestion.classList.add("question-container");
+            newQuestion.innerHTML = questionSection.innerHTML;
+            questionSection.appendChild(newQuestion);
         }
     </script>
 </body>

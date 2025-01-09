@@ -1,16 +1,28 @@
 <?php
 session_start();
-if ($_SESSION['role'] !== 'Teacher') {
-    header("Location: home.php");
+if (!isset($_SESSION['username']) || $_SESSION['role'] != 'Teacher') {
+    header("Location: login.php");
     exit();
 }
 
-$lesson_id = $_GET['lesson_id'];
+// Connect to the database
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "lingolearn";
 
-// Fetch student answers for the selected lesson
-$conn = new mysqli('localhost', 'root', '', 'lingolearn');
-$answers_result = $conn->query("SELECT * FROM student_answers WHERE lesson_id = '$lesson_id'");
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
+// Correcting the query to not use "lesson_id" if it's not part of the schema
+$sql = "SELECT a.student_username, q.question_text, a.answer 
+        FROM answers a 
+        JOIN questions q ON a.question_id = q.id";
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -18,49 +30,101 @@ $answers_result = $conn->query("SELECT * FROM student_answers WHERE lesson_id = 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Answers for Lesson</title>
-    <link rel="stylesheet" href="student_answers.css">
+    <title>View Student Answers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f1f1f1;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <h1>Student Answers for Lesson <?php echo htmlspecialchars($lesson_id); ?></h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>Answer</th>
-                <th>Teacher's Answer</th>
-                <th>Provide Feedback</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($answer = $answers_result->fetch_assoc()): ?>
+
+<div class="container">
+    <h1>Student Answers</h1>
+    <div class="table-container">
+        <table>
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars($answer['student_id']); ?></td>
-                    <td><?php echo htmlspecialchars($answer['student_answer']); ?></td>
-                    <td>
-                        <?php echo htmlspecialchars($answer['correct_answer']); ?>
-                    </td>
-                    <td>
-                        <form method="POST">
-                            <input type="hidden" name="answer_id" value="<?php echo $answer['answer_id']; ?>">
-                            <input type="text" name="correct_answer" placeholder="Provide answer" required>
-                            <button type="submit" name="update_answer">Submit Answer</button>
-                        </form>
-                    </td>
+                    <th>Student Username</th>
+                    <th>Question</th>
+                    <th>Answer</th>
                 </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php while ($row = $result->fetch_assoc()) { ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['student_username']); ?></td>
+                        <td><?php echo htmlspecialchars($row['question_text']); ?></td>
+                        <td><?php echo htmlspecialchars($row['answer']); ?></td>
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
 
-    <?php
-    if (isset($_POST['update_answer'])) {
-        $answer_id = $_POST['answer_id'];
-        $correct_answer = $_POST['correct_answer'];
+    <a href="home.php" class="back-button">Back to Homepage</a>
+</div>
 
-        // Update the correct answer provided by the teacher
-        $conn->query("UPDATE student_answers SET correct_answer = '$correct_answer' WHERE answer_id = '$answer_id'");
-        echo "<p>Answer updated successfully!</p>";
-    }
-    ?>
 </body>
 </html>
