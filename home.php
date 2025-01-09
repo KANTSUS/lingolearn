@@ -27,8 +27,8 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
     <div class="sidebar">
         <h2>LingoLearn</h2>
         <ul>
-            <li><button id="go-to-feature1">Feature1</button></li>
-            <li><button id="go-to-feature2">Feature2</button></li>
+            <li><button id="go-to-feature1">Lesson</button></li>
+            <li><button id="go-to-feature2">Reviewer</button></li>
             <li><button id="go-to-feature3">AI Essay Feedback</button></li>
         </ul>
         <button id="logout-button" onclick="logout()">Logout</button>
@@ -36,10 +36,10 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
 
     <div class="main-content">
         <header>
-        <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
-    <?php if (isset($_SESSION['role'])): ?>
-        <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
-    <?php endif; ?>
+            <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+            <?php if (isset($_SESSION['role'])): ?>
+                <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
+            <?php endif; ?>
             <nav>
                 <a href="home.php" id="home-link">Home</a>
                 <a href="about.php" id="about-link">About</a>
@@ -53,13 +53,18 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
             <h3>Learn, speak, and connect with confidence.</h3>
             <p>Experience personalized learning with AI tools that enhance skills and provide feedback. Tailored lessons adapt to your style. Join us and start your journey to fluency today!</p>
         </section>
+
         <section>
             <h2>Feature 1: Upload and View Lessons</h2>
             <?php if ($is_teacher): ?>
                 <p>As a teacher, you can upload lessons here:</p>
                 <button id="upload-lesson-button" onclick="goToUploadLesson()">Upload Lesson</button>
+                <br><br>
+                <p>View the list of students and their submitted answers:</p>
+                <button id="view-student-answers-button" onclick="goToStudentAnswers()">View Student Answers</button>
             <?php else: ?>
-                <p>As a student, you can view the lessons uploaded by teachers.</p>
+                <p>As a student, you can view the lessons and questions uploaded by teachers.</p>
+                <button id="view-questions-button" onclick="goToQuestions()">View Questions</button>
             <?php endif; ?>
         </section>
     </div>
@@ -83,6 +88,14 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
 
         function goToUploadLesson() {
             window.location.href = 'upload_lesson.php';
+        }
+
+        function goToQuestions() {
+            window.location.href = 'view_questions.php';
+        }
+
+        function goToStudentAnswers() {
+            window.location.href = 'view_student_answers.php';
         }
     </script>
 </body>
