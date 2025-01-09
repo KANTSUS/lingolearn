@@ -16,11 +16,20 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Correcting the query to not use "lesson_id" if it's not part of the schema
-$sql = "SELECT a.student_username, q.question_text, a.answer 
+// Get the selected student's username
+$student = isset($_GET['student']) ? $_GET['student'] : '';
+if (empty($student)) {
+    header("Location: view_students.php");
+    exit();
+}
+
+// Fetch answers for the selected student
+$sql = "SELECT q.question_text, a.answer 
         FROM answers a 
-        JOIN questions q ON a.question_id = q.id";
+        JOIN questions q ON a.question_id = q.id 
+        WHERE a.student_username = ?";
 $stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $student);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -30,7 +39,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Student Answers</title>
+    <title><?php echo htmlspecialchars($student); ?>'s Answers</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -91,39 +100,29 @@ $result = $stmt->get_result();
         .back-button:hover {
             text-decoration: underline;
         }
-
-        .table-container {
-            overflow-x: auto;
-            max-width: 100%;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Student Answers</h1>
-    <div class="table-container">
-        <table>
-            <thead>
+    <h1>Answers by <?php echo htmlspecialchars($student); ?></h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Answer</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while ($row = $result->fetch_assoc()) { ?>
                 <tr>
-                    <th>Student Username</th>
-                    <th>Question</th>
-                    <th>Answer</th>
+                    <td><?php echo htmlspecialchars($row['question_text']); ?></td>
+                    <td><?php echo htmlspecialchars($row['answer']); ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $result->fetch_assoc()) { ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($row['student_username']); ?></td>
-                        <td><?php echo htmlspecialchars($row['question_text']); ?></td>
-                        <td><?php echo htmlspecialchars($row['answer']); ?></td>
-                    </tr>
-                <?php } ?>
-            </tbody>
-        </table>
-    </div>
-
-    <a href="home.php" class="back-button">Back to Homepage</a>
+            <?php } ?>
+        </tbody>
+    </table>
+    <a href="view_students.php" class="back-button">Back to Students List</a>
 </div>
 
 </body>
