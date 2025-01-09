@@ -4,7 +4,12 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit();
 }
+$display_name = $_SESSION['username'];
 
+// Check if the user is a teacher and has a prefix
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSION['prefix'])) {
+    $display_name = $_SESSION['prefix'] . ' ' . $display_name;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +32,11 @@ if (!isset($_SESSION['username'])) {
 
     <div class="main-content">
         <header>
-            <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
+        <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+    <?php if (isset($_SESSION['role'])): ?>
+        <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
+    <?php endif; ?>
+    <nav>
             <nav>
                 <a href="home.php" id="home-link">Home</a>
                 <a href="about.php" id="about-link">About</a>

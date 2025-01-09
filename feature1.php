@@ -12,6 +12,12 @@ if (isset($_GET['grade'])) {
 } else {
     echo "No grade selected.";
 }
+$display_name = $_SESSION['username'];
+
+
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSION['prefix'])) {
+    $display_name = $_SESSION['prefix'] . ' ' . $display_name;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +29,7 @@ if (isset($_GET['grade'])) {
    
 </head>
 <body>
-    <div class="sidebar">
+<div class="sidebar">
         <h2>LingoLearn</h2>
         <ul>
             <li><button id="go-to-feature1">Feature1</button></li>
@@ -34,13 +40,16 @@ if (isset($_GET['grade'])) {
     </div>
 
     <div class="main-content">
-        <header>
-            <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
-            <nav>
-                <a href="home.php" id="home-link">Home</a>
-                <a href="about.php" id="about-link">About</a>
-                <a href="contact.php" id="contact-link">Contact</a>
-            </nav>
+    <header>
+    <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+    <?php if (isset($_SESSION['role'])): ?>
+        <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
+    <?php endif; ?>
+    <nav>
+        <a href="home.php" id="home-link">Home</a>
+        <a href="about.php" id="about-link">About</a>
+        <a href="contact.php" id="contact-link">Contact</a>
+    </nav>
         </header>
         <section class="lesson-section">
         <div class="lesson-card" onclick="showGradeModal('BASICS')">
@@ -127,54 +136,54 @@ if (isset($_GET['grade'])) {
             }
 
             document.addEventListener('DOMContentLoaded', function () {
-    // Close the modal on page load if it's already opened
+   
     closeGradeModal();
 });
 
-// Function to show the grade selection modal
+
 function showGradeModal(lessonType) {
     const modal = document.getElementById('gradeModal');
     modal.style.display = 'block';
 
-    // Store the lessonType in the modal to use it later
+   
     modal.setAttribute('data-lesson-type', lessonType);
 }
 
-// Function to close the grade selection modal
+
 function closeGradeModal() {
     const modal = document.getElementById('gradeModal');
     modal.style.display = 'none';
 }
 
-// Redirect to the selected lesson page
+
 function redirectToLesson(grade) {
     const modal = document.getElementById('gradeModal');
     const lessonType = modal.getAttribute('data-lesson-type');
 
-    // Redirect using the selected lesson type and grade
+    
     window.location.href = `/lessons/${lessonType}/${grade}`;
-    closeGradeModal(); // Close the modal after selection
+    closeGradeModal(); 
 }
 function showGradeModal(lessonType) {
     const modal = document.getElementById('gradeModal');
     const lessonText = document.getElementById('lesson-type');
     
-    // Set the modal text based on the lesson type (BASICS, INTERMEDIATE, ADVANCED)
+ 
     lessonText.textContent = lessonType.charAt(0).toUpperCase() + lessonType.slice(1) + " LESSONS";
-    modal.style.display = 'block'; // Show the modal
+    modal.style.display = 'block'; 
 
-    // Store the lesson type in the modal so it can be used when redirecting
+   
     modal.setAttribute('data-lesson-type', lessonType.toLowerCase());
 }
 
 function redirectToLesson(grade) {
     const modal = document.getElementById('gradeModal');
-    const lessonType = modal.getAttribute('data-lesson-type'); // Get the selected lesson type (basics, intermediate, advanced)
+    const lessonType = modal.getAttribute('data-lesson-type'); 
 
-    // Redirect to the corresponding lesson file based on lesson type and grade
+   
     window.location.href = `/lingolearn/lessons/${lessonType.toLowerCase()}/grade${grade}.php`; 
     
-    closeGradeModal(); // Close the modal after selection
+    closeGradeModal(); 
 }
 
 

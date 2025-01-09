@@ -4,13 +4,16 @@ if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit();
 }
-if (isset($_POST['guest_login'])) {
-   
-    $_SESSION['username'] = "Guest_" . rand(1000, 9999); 
-    header("Location: home.php");
-    exit();
+
+$display_name = $_SESSION['username'];
+
+// Check if the user is a teacher and has a prefix
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSION['prefix'])) {
+    $display_name = $_SESSION['prefix'] . ' ' . $display_name;
 }
 
+// Determine if the user is a teacher or student
+$is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +36,10 @@ if (isset($_POST['guest_login'])) {
 
     <div class="main-content">
         <header>
-            <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
+        <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+    <?php if (isset($_SESSION['role'])): ?>
+        <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
+    <?php endif; ?>
             <nav>
                 <a href="home.php" id="home-link">Home</a>
                 <a href="about.php" id="about-link">About</a>
@@ -44,10 +50,17 @@ if (isset($_POST['guest_login'])) {
     <div class="description">
         <section class="hero">
             <h2>Tool for English Learning</h2>
-            <h3>Learn, speak and connect with confidence.</h3>
-            <p>Experience personalized learning with AI tools that enhance 
-            skills and provide feedback. Tailored lessons adapt to your style.
-            Join us and start your journey to fluency today!</p>
+            <h3>Learn, speak, and connect with confidence.</h3>
+            <p>Experience personalized learning with AI tools that enhance skills and provide feedback. Tailored lessons adapt to your style. Join us and start your journey to fluency today!</p>
+        </section>
+        <section>
+            <h2>Feature 1: Upload and View Lessons</h2>
+            <?php if ($is_teacher): ?>
+                <p>As a teacher, you can upload lessons here:</p>
+                <button id="upload-lesson-button" onclick="goToUploadLesson()">Upload Lesson</button>
+            <?php else: ?>
+                <p>As a student, you can view the lessons uploaded by teachers.</p>
+            <?php endif; ?>
         </section>
     </div>
 
@@ -57,20 +70,20 @@ if (isset($_POST['guest_login'])) {
         }
 
         document.getElementById('go-to-feature1').addEventListener('click', function() {
-        window.location.href = 'feature1.php';
-    });
+            window.location.href = 'feature1.php';
+        });
 
-    document.getElementById('go-to-feature2').addEventListener('click', function() {
-        window.location.href = 'feature2.php';
-    });
+        document.getElementById('go-to-feature2').addEventListener('click', function() {
+            window.location.href = 'feature2.php';
+        });
 
-    document.getElementById('go-to-feature3').addEventListener('click', function() {
-        window.location.href = 'feature3.php';
-    });
+        document.getElementById('go-to-feature3').addEventListener('click', function() {
+            window.location.href = 'feature3.php';
+        });
 
-    function goToHome() {
-        window.location.href = 'home.php';
-    }
+        function goToUploadLesson() {
+            window.location.href = 'upload_lesson.php';
+        }
     </script>
 </body>
 </html>

@@ -56,8 +56,19 @@ if (!isset($_SESSION['username'])) {
         }
 
         function goBackToFeature1() {
-            window.location.href = '../../feature1.php'; // Redirect back to Feature 1
+            window.location.href = '../../feature1.php'; 
         }
+        document.getElementById('go-to-feature1').addEventListener('click', function() {
+        window.location.href = 'feature1.php';
+    });
+
+    document.getElementById('go-to-feature2').addEventListener('click', function() {
+        window.location.href = 'feature2.php';
+    });
+
+    document.getElementById('go-to-feature3').addEventListener('click', function() {
+        window.location.href = 'feature3.php';
+    });
     </script>
 </body>
 </html>

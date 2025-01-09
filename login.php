@@ -13,20 +13,20 @@ if ($conn->connect_error) {
 
 $error_message = "";
 
-
 if (isset($_POST['create_account'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $role = $_POST['role'];
+    $prefix = isset($_POST['prefix']) ? $_POST['prefix'] : null;
 
-    $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$password')";
+    $sql = "INSERT INTO users (username, email, password, role, prefix) VALUES ('$username', '$email', '$password', '$role', '$prefix')";
     if ($conn->query($sql) === TRUE) {
         $error_message = "Account created successfully!";
     } else {
         $error_message = "Error: " . $sql . "<br>" . $conn->error;
     }
 }
-
 
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
@@ -39,6 +39,11 @@ if (isset($_POST['login'])) {
         $row = $result->fetch_assoc();
         if (password_verify($password, $row['password'])) {
             $_SESSION['username'] = $username;
+
+           
+            $_SESSION['role'] = $row['role'];
+            $_SESSION['prefix'] = $row['prefix'];
+
             header("Location: home.php");
             exit();
         } else {
@@ -104,6 +109,23 @@ if (isset($_POST['guest_login'])) {
             <div class="input-field">
                 <input type="password" name="password" placeholder="Password" required>
             </div>
+            <div class="input-field">
+                <label for="role">Role:</label>
+                <select name="role" id="role" onchange="togglePrefix()" required>
+                    <option value="" disabled selected>Select role</option>
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                </select>
+            </div>
+            <div class="input-field" id="prefix-field" style="display: none;">
+                <label for="prefix">Prefix:</label>
+                <select name="prefix" id="prefix">
+                    <option value="" disabled selected>Select prefix</option>
+                    <option value="Mr.">Mr.</option>
+                    <option value="Mrs.">Mrs.</option>
+                    <option value="Ms.">Ms.</option>
+                </select>
+            </div>
             <button type="submit" name="create_account" class="create-button">Create Account</button>
             <a href="#" class="back-to-login" onclick="showLogin()">Back to Login</a>
         </form>
@@ -116,6 +138,17 @@ if (isset($_POST['guest_login'])) {
             <a href="#" class="back-to-login" onclick="showLogin()">Back to Login</a>
         </div>
     </section>
+    <script>
+        function togglePrefix() {
+            const role = document.getElementById('role').value;
+            const prefixField = document.getElementById('prefix-field');
+            if (role === 'Teacher') {
+                prefixField.style.display = 'block';
+            } else {
+                prefixField.style.display = 'none';
+            }
+        }
+    </script>
     <script src="login.js"></script>
 
 </body>
