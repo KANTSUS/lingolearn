@@ -18,13 +18,10 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if form is submitted
+// Handle form submission to store answers
 $submitted = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submitted = true;
-    // Store answers in the database
     foreach ($_POST as $question_id => $answer) {
-        // Avoid storing form field names like "question_1", so we check if it's a valid answer field
         if (strpos($question_id, 'question_') === 0) {
             $question_id = str_replace('question_', '', $question_id);
             $stmt = $conn->prepare("INSERT INTO answers (student_username, question_id, answer) VALUES (?, ?, ?)");
@@ -32,18 +29,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
         }
     }
+    $submitted = true;
 }
 
-// Fetch all questions from the database
-$sql = "SELECT * FROM questions";
+// Fetch all questions related to the lesson
+$lesson_id = 1;  // Example lesson ID, replace this dynamically based on your session or URL
+$sql = "SELECT * FROM questions WHERE lesson_id = ?";
 $stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $lesson_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Debugging: Check if any questions are fetched
-if ($result->num_rows === 0) {
-    echo "<p>No questions found in the database.</p>";
-}
+// Fetch the lesson details for the PDF display
+$lesson_sql = "SELECT * FROM lessons WHERE id = ?";
+$lesson_stmt = $conn->prepare($lesson_sql);
+$lesson_stmt->bind_param("i", $lesson_id);
+$lesson_stmt->execute();
+$lesson_result = $lesson_stmt->get_result();
+$lesson = $lesson_result->fetch_assoc();
+
 ?>
 
 <!DOCTYPE html>
@@ -51,136 +55,20 @@ if ($result->num_rows === 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Questions</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 80%;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .question-container {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-        }
-
-        .question-container p {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .question-container label {
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .question-container input[type="text"],
-        .question-container input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        .question-container input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .question-container input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        .btn {
-            background-color: #5cb85c;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            display: block;
-            margin: 20px auto;
-            font-size: 16px;
-        }
-
-        .btn:hover {
-            background-color: #4cae4c;
-        }
-
-        .back-button {
-            display: inline-block;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .back-button:hover {
-            text-decoration: underline;
-        }
-
-        .question-container .multiple-choice {
-            margin-bottom: 10px;
-        }
-
-        /* Popup Styling */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            z-index: 9999;
-        }
-
-        .popup .popup-content {
-            margin-bottom: 20px;
-        }
-
-        .popup .btn-close {
-            background-color: #5cb85c;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .popup .btn-close:hover {
-            background-color: #4cae4c;
-        }
-    </style>
+    <title>Answer the Questions</title>
+    <link rel="stylesheet" href="view_question.css">
 </head>
 <body>
 
 <div class="container">
     <h1>Answer the Questions</h1>
-    
+
+    <!-- PDF Viewer for the Lesson -->
+    <h2>Lesson: <?php echo htmlspecialchars($lesson['lesson_name']); ?></h2>
+    <object data="<?php echo htmlspecialchars($lesson['file_path']); ?>" type="application/pdf" width="600" height="400">
+        <p>Your browser does not support PDFs. Download the PDF to view it: <a href="<?php echo htmlspecialchars($lesson['file_path']); ?>">Download PDF</a>.</p>
+    </object>
+
     <?php if ($submitted): ?>
         <div class="popup" id="popup">
             <div class="popup-content">
@@ -191,29 +79,40 @@ if ($result->num_rows === 0) {
         </div>
     <?php endif; ?>
 
-    <form action="view_questions.php" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
-        <?php while ($row = $result->fetch_assoc()) { ?>
+    <form action="view_students.php" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
+    <?php 
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) { 
+            $choices = explode(",", $row['choices']);
+            ?>
             <div class="question-container">
-                <p><strong>Question: </strong><?php echo $row['question_text']; ?></p>
-                
+                <p><strong>Question: </strong><?php echo htmlspecialchars($row['question_text']); ?></p>
+
                 <?php if ($row['question_type'] == 'multiple_choice') {
-                    $choices = explode(",", $row['choices']);
-                    $letters = ['a', 'b', 'c', 'd']; 
-                    foreach ($choices as $index => $choice) { ?>
+                    // Dynamically generate letters (a, b, c, d)
+                    $letters = range('a', 'd'); // Ensuring only 4 choices (a, b, c, d)
+                    foreach ($choices as $index => $choice) { 
+                        $letter = $letters[$index]; // Get the letter corresponding to the index
+                        ?>
                         <div class="multiple-choice">
                             <label>
-                                <input type="radio" name="question_<?php echo $row['id']; ?>" value="<?php echo $letters[$index]; ?>">
-                                <?php echo $letters[$index] . '. ' . htmlspecialchars($choice); ?>
+                                <input type="radio" name="question_<?php echo $row['id']; ?>" value="<?php echo $letter; ?>">
+                                <?php echo $letter . '. ' . htmlspecialchars(trim($choice)); ?>
                             </label>
                         </div>
                     <?php }
                 } else { ?>
-                    <label for="answer">Your Answer:</label>
-                    <input type="text" name="question_<?php echo $row['id']; ?>" placeholder="Enter your answer here">
+                    <label for="answer_<?php echo $row['id']; ?>">Your Answer:</label>
+                    <input type="text" id="answer_<?php echo $row['id']; ?>" name="question_<?php echo $row['id']; ?>" placeholder="Enter your answer here">
                 <?php } ?>
             </div>
-        <?php } ?>
-        <button type="submit" class="btn">Submit Answers</button>
+        <?php 
+        }
+    } else {
+        echo "<p>No questions found in the database.</p>";
+    }
+    ?>
+    <button type="submit" class="btn">Submit Answers</button>
     </form>
 
     <a href="home.php" class="back-button">Back to Homepage</a>

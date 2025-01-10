@@ -55,9 +55,9 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
         </section>
 
         <section>
-            <h2>Feature 1: Upload and View Lessons</h2>
+            <h2>Upload and View Lessons </h2>
             <?php if ($is_teacher): ?>
-                <p>As a teacher, you can upload lessons here:</p>
+                <p>As a teacher, you can upload lessons and quizzes here:</p>
                 <button id="upload-lesson-button" onclick="goToUploadLesson()">Upload Lesson</button>
                 <br><br>
                 <p>View the list of students and their submitted answers:</p>
