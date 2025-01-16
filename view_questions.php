@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submitted = true;
 }
 
-// Fetch all questions related to the lesson
+// Fetch the lesson based on ID (can dynamically pass lesson ID)
 $lesson_id = 1;  // Example lesson ID, replace this dynamically based on your session or URL
 $sql = "SELECT * FROM questions WHERE lesson_id = ?";
 $stmt = $conn->prepare($sql);
@@ -40,14 +40,13 @@ $stmt->bind_param("i", $lesson_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Fetch the lesson details for the PDF display
+// Fetch the lesson details
 $lesson_sql = "SELECT * FROM lessons WHERE id = ?";
 $lesson_stmt = $conn->prepare($lesson_sql);
 $lesson_stmt->bind_param("i", $lesson_id);
 $lesson_stmt->execute();
 $lesson_result = $lesson_stmt->get_result();
 $lesson = $lesson_result->fetch_assoc();
-
 ?>
 
 <!DOCTYPE html>
@@ -79,7 +78,7 @@ $lesson = $lesson_result->fetch_assoc();
         </div>
     <?php endif; ?>
 
-    <form action="view_students.php" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
+    <form action="view_question.php" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
     <?php 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) { 
@@ -89,10 +88,10 @@ $lesson = $lesson_result->fetch_assoc();
                 <p><strong>Question: </strong><?php echo htmlspecialchars($row['question_text']); ?></p>
 
                 <?php if ($row['question_type'] == 'multiple_choice') {
-                    // Dynamically generate letters (a, b, c, d)
-                    $letters = range('a', 'd'); // Ensuring only 4 choices (a, b, c, d)
+                    
+                    $letters = range('a', 'd'); 
                     foreach ($choices as $index => $choice) { 
-                        $letter = $letters[$index]; // Get the letter corresponding to the index
+                        $letter = $letters[$index]; 
                         ?>
                         <div class="multiple-choice">
                             <label>
@@ -125,7 +124,7 @@ $lesson = $lesson_result->fetch_assoc();
         };
 
         function closePopup() {
-            window.location.href = 'home.php'; // Redirect to home page after closing popup
+            window.location.href = 'home.php'; 
         }
     <?php endif; ?>
 </script>

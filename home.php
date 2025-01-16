@@ -14,6 +14,9 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSI
 
 // Determine if the user is a teacher or student
 $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
+
+// Retrieve grade if the user is a student
+$grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,6 +40,14 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
     <div class="main-content">
         <header>
             <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+            <?php if ($grade): ?>
+                <h3 class="grade-text">Your Grade: <?php echo htmlspecialchars($grade); ?></h3>
+            <?php else: ?>
+                <!-- No grade displayed for teachers -->
+                <?php if (!$is_teacher): ?>
+                    <h3 class="grade-text">Your grade is not available.</h3>
+                <?php endif; ?>
+            <?php endif; ?>
             <?php if (isset($_SESSION['role'])): ?>
                 <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
             <?php endif; ?>
@@ -55,7 +66,7 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
         </section>
 
         <section>
-            <h2>Upload and View Lessons </h2>
+            <h2>Upload and View Lessons</h2>
             <?php if ($is_teacher): ?>
                 <p>As a teacher, you can upload lessons and quizzes here:</p>
                 <button id="upload-lesson-button" onclick="goToUploadLesson()">Upload Lesson</button>
@@ -98,5 +109,6 @@ $is_teacher = isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher';
             window.location.href = 'view_student_answers.php';
         }
     </script>
+    <script src="home.js"></script>
 </body>
 </html>
