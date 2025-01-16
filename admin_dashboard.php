@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// Check if the user is logged in and is an admin
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // Redirect non-admin users to the home page
+    
     header("Location: home.php");
     exit();
 }
@@ -106,7 +106,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
     <h1>Admin Dashboard</h1>
     <p>Welcome, Admin!</p>
     <div class="container">
-        <a href="login.php" style="display: inline-block; margin-bottom: 20px;">Back to Login Page</a>
+        <a href="login.php" style="display: inline-block; margin-bottom: 20px;">Back to Login Page!</a>
         <div class="form-container">
             <h2>Create Teacher Account</h2>
             <form action="create_teacher.php" method="POST">
