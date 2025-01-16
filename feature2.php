@@ -44,26 +44,29 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSI
             </nav>
         </header>
     </div>
-    <section class="customized-reviewer">
-    <h1 class="main-title">Costumized Reviewer</h1>
-    <h2 class="subtitle">Welcome to Your Personalized Learning Hub!</h2>
-    <p class="description">
-        Unlock your potential with our Customized Reviewer, offering tailored practice materials to enhance your learning journey.
-    </p>
-    <button class="create-design-button">+ Create Design</button>
-    <div class="templates">
-        <img src="image/4.png" alt="Reviewer Template" class="template-image">
-        <img src="image/5.png" alt="Website Inspired Template" class="template-image">
-        <img src="image/6.png" alt="Aesthetic Reviewers" class="template-image">
+
+    <div class="description">
+        <section>
+                <h2>Feature 1: Upload and View Lessons</h2>
+                <?php if ($is_teacher): ?>
+                    <p>As a teacher, you can upload lessons here:</p>
+                    <button id="upload-lesson-button" onclick="goToUploadLesson()">Upload Lesson</button>
+                    <br><br>
+                    <p>View the list of students and their submitted answers:</p>
+                    <button id="view-student-answers-button" onclick="goToStudentAnswers()">View Student Answers</button>
+                <?php else: ?>
+                    <p>As a student, you can view the lessons and questions uploaded by teachers.</p>
+                    <button id="view-questions-button" onclick="goToQuestions()">View Questions</button>
+                <?php endif; ?>
+        </section>
     </div>
-</section>
 
     <script>
         function logout() {
             window.location.href = 'logout.php';
         }
 
-        document.getElementById('go-to-feature1').addEventListener('click', function() {
+    document.getElementById('go-to-feature1').addEventListener('click', function() {
         window.location.href = 'feature1.php';
     });
 
@@ -77,6 +80,18 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSI
 
     function goToHome() {
         window.location.href = 'home.php';
+    }
+
+    function goToUploadLesson() {
+            window.location.href = 'upload_lesson.php';
+    }
+
+    function goToQuestions() {
+            window.location.href = 'view_questions.php';
+    }
+
+    function goToStudentAnswers() {
+            window.location.href = 'view_student_answers.php';
     }
     </script>
 </body>
