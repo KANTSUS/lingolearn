@@ -7,7 +7,7 @@ if (!isset($_SESSION['username'])) {
 
 $display_name = $_SESSION['username'];
 
-// Connect to the database (update with your actual database credentials)
+// Connect to the database
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -18,55 +18,98 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if form is submitted for question addition
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && isset($_POST['questionType'])) {
+// Check if the lessons table has the 'lesson_name' column
+$result = $conn->query("DESCRIBE lessons");
+$columns = [];
+while ($row = $result->fetch_assoc()) {
+    $columns[] = $row['Field'];
+}
+
+if (!in_array('lesson_name', $columns)) {
+    // Add 'lesson_name' column if it doesn't exist
+    $alterTableQuery = "ALTER TABLE lessons ADD COLUMN lesson_name VARCHAR(255)";
+    if ($conn->query($alterTableQuery) === FALSE) {
+        die("Error adding column 'lesson_name': " . $conn->error);
+    }
+}
+
+// Check if form is submitted for lesson and question addition
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['lessonFile']) && isset($_POST['questionText']) && isset($_POST['questionType'])) {
+    $lessonFile = $_FILES['lessonFile'];
     $questions = $_POST['questionText'];
     $questionType = $_POST['questionType'];
-    $choices = isset($_POST['choices']) ? $_POST['choices'] : [];
-    $correctAnswers = isset($_POST['correctAnswer']) ? $_POST['correctAnswer'] : [];
     
-    // Flag to show the success popup
-    $questionAdded = false;
+    // Check if file is a valid PDF
+    if ($lessonFile['type'] == 'application/pdf') {
+        // Move the uploaded file to the "uploads" directory
+        $target_dir = "uploads/";
+        $target_file = $target_dir . basename($lessonFile["name"]);
+        
+        if (move_uploaded_file($lessonFile["tmp_name"], $target_file)) {
+            // Insert the lesson information into the lessons table
+            $lesson_name = basename($lessonFile["name"]);
+            $stmt = $conn->prepare("INSERT INTO lessons (lesson_name, file_path) VALUES (?, ?)");
+            if ($stmt === false) {
+                echo "<div class='error'>Error preparing statement: " . $conn->error . "</div>";
+            } else {
+                $stmt->bind_param("ss", $lesson_name, $target_file);
+                if ($stmt->execute()) {
+                    $lesson_id = $conn->insert_id;  // Get the inserted lesson's ID
+                    
+                    // Flag to show the success popup
+                    $questionAdded = false;
 
-    foreach ($questions as $index => $questionText) {
-        $question_type = $questionType[$index];
+                    // Handle questions
+                    foreach ($questions as $index => $questionText) {
+                        // Ensure we have a valid question type
+                        $question_type = isset($questionType[$index]) ? $questionType[$index] : '';
+                        if (empty($question_type)) {
+                            continue;  // Skip if question type is not provided
+                        }
 
-        // Initialize values for choices and correct answer
-        $choicesList = '';
-        $correctAnswer = '';
+                        $choicesList = '';
+                        $correctAnswer = '';
 
-        // Handle multiple-choice questions
-        if ($question_type == "multiple_choice") {
-            if (isset($choices[$index])) {
-                // Convert choices array to a string
-                $choicesList = implode(", ", $choices[$index]);
+                        // Handle multiple-choice questions
+                        if ($question_type == "multiple_choice") {
+                            if (isset($_POST['choices'][$index])) {
+                                $choicesList = implode(", ", $_POST['choices'][$index]);
+                            }
+
+                            if (isset($_POST['correctAnswer'][$index])) {
+                                $correctAnswer = $_POST['correctAnswer'][$index];
+                            }
+
+                            // Insert question into the questions table
+                            $stmt = $conn->prepare("INSERT INTO questions (lesson_id, question_text, question_type, choices, correct_answer) VALUES (?, ?, ?, ?, ?)");
+                            $stmt->bind_param("issss", $lesson_id, $questionText, $question_type, $choicesList, $correctAnswer);
+                        } elseif ($question_type == "fill_in_the_blank") {
+                            // Insert fill-in-the-blank question into the questions table
+                            $stmt = $conn->prepare("INSERT INTO questions (lesson_id, question_text, question_type) VALUES (?, ?, ?)");
+                            $stmt->bind_param("iss", $lesson_id, $questionText, $question_type);
+                        }
+
+                        // Execute the statement
+                        if ($stmt->execute()) {
+                            $questionAdded = true;
+                        } else {
+                            echo "<div class='error'>Error: " . $conn->error . "</div>";
+                        }
+                    }
+
+                    // Close the statement
+                    if (isset($stmt)) {
+                        $stmt->close();
+                    }
+                } else {
+                    echo "<div class='error'>Error executing statement: " . $conn->error . "</div>";
+                }
             }
-
-            if (isset($correctAnswers[$index])) {
-                // Get the correct answer choice
-                $correctAnswer = $correctAnswers[$index];
-            }
-
-            // Prepare statement for multiple-choice question
-            $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type, choices, correct_answer) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $questionText, $question_type, $choicesList, $correctAnswer);
-        } elseif ($question_type == "fill_in_the_blank") {
-            // Prepare statement for fill-in-the-blank question
-            $stmt = $conn->prepare("INSERT INTO questions (question_text, question_type) VALUES (?, ?)");
-            $stmt->bind_param("ss", $questionText, $question_type);
-        }
-
-        // Execute statement and check for errors
-        if ($stmt->execute()) {
-            $questionAdded = true;  // Flag to show success popup
         } else {
-            echo "<div class='error'>Error: " . $conn->error . "</div>";
+            echo "<div class='error'>Sorry, there was an error uploading your file.</div>";
         }
-    }
-
-    // Close the statement after all iterations
-    if (isset($stmt)) {
-        $stmt->close();
+    } else {
+        echo "<div class='error'>Only PDF files are allowed for the lesson file.</div>";
     }
 }
 ?>
@@ -77,104 +120,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Lesson and Questions</title>
-    <style>
-        /* Styling for the page */
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        h1, h2 {
-            text-align: center;
-        }
-        label {
-            font-weight: bold;
-        }
-        input, select, textarea {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        .btn {
-            background-color: #5cb85c;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .btn:hover {
-            background-color: #4cae4c;
-        }
-        .question-container {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        /* Popup Styles */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            z-index: 9999;
-        }
-
-        .popup .popup-content {
-            margin-bottom: 20px;
-        }
-
-        .popup .btn-close {
-            background-color: #5cb85c;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .popup .btn-close:hover {
-            background-color: #4cae4c;
-        }
-    </style>
+    <link rel="stylesheet" href="upload_lesson.css">
 </head>
 <body>
     <div class="container">
         <h1>Upload Lesson and Questions</h1>
-        
-        <h2>Add Questions</h2>
-        <form action="" method="post">
+
+        <h2>Upload a Lesson (PDF File) and Add Questions</h2>
+
+        <!-- Upload Lesson -->
+        <form action="" method="post" enctype="multipart/form-data">
+            <div class="lesson-upload">
+                <label for="lessonFile">Upload Lesson (PDF):</label>
+                <input type="file" name="lessonFile" id="lessonFile" accept="application/pdf" required>
+            </div>
+
             <div id="questionsSection">
+                <!-- Dynamically added questions will appear here -->
                 <div class="question-container">
                     <label for="questionType">Question Type:</label>
                     <select name="questionType[]" class="questionType" onchange="showFields(this)" required>
@@ -204,17 +166,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
                 </div>
             </div>
             <button type="button" class="btn" onclick="addQuestion()">Add Another Question</button>
-            <button type="submit" class="btn">Submit Questions</button>
+            <button type="submit" class="btn">Submit Lesson and Questions</button>
         </form>
     </div>
+
     <a href="home.php" class="back-button">Back to Homepage</a>
 
     <!-- Popup message -->
     <?php if (isset($questionAdded) && $questionAdded): ?>
         <div class="popup" id="popup">
             <div class="popup-content">
-                <h2>Question added successfully!</h2>
-                <p>Your questions have been successfully added.</p>
+                <h2>Lesson and Questions Added Successfully!</h2>
+                <p>Your lesson and questions have been successfully added.</p>
             </div>
             <button class="btn-close" onclick="closePopup()">Go to Homepage</button>
         </div>
@@ -229,7 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['questionText']) && iss
             fillInTheBlank.style.display = select.value === 'fill_in_the_blank' ? 'block' : 'none';
             multipleChoice.style.display = select.value === 'multiple_choice' ? 'block' : 'none';
         }
-        
+
         function addQuestion() {
             const questionSection = document.getElementById("questionsSection");
             const newQuestion = document.createElement("div");
