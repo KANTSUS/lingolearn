@@ -120,19 +120,19 @@ $lesson = $lesson_result->fetch_assoc();
 </div>
 
 <script>
-    // Add an event listener for form submission
+   
     document.querySelector("form").addEventListener("submit", function(event) {
-        // Check if form is valid, you can add extra validation here
+       
         if (confirm("Are you sure you want to submit your answers?")) {
-            // Show the success popup
+          
             document.getElementById('popup').style.display = 'block';
         } else {
-            event.preventDefault();  // Prevent form submission if user cancels
+            event.preventDefault(); 
         }
     });
 
     function closePopup() {
-        window.location.href = 'home.php'; // Redirect after closing popup
+        window.location.href = 'home.php'; 
     }
 
     <?php if ($submitted): ?>

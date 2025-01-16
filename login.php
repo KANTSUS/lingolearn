@@ -13,32 +13,42 @@ if ($conn->connect_error) {
 
 $error_message = "";
 
+// Create Account
 if (isset($_POST['create_account'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     $role = $_POST['role'];
     $prefix = isset($_POST['prefix']) ? $_POST['prefix'] : null;
-    $grade = null;  // By default, grade is null
+    $grade = null;
 
     if ($role === 'Student' && isset($_POST['grade'])) {
         $grade = $_POST['grade'];  // Only set grade if the role is 'Student'
     }
 
-    $sql = "INSERT INTO users (username, email, password, role, prefix, grade) VALUES ('$username', '$email', '$password', '$role', '$prefix', '$grade')";
-    if ($conn->query($sql) === TRUE) {
+    // Use prepared statement to insert data
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, prefix, grade) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssssi", $username, $email, $password, $role, $prefix, $grade);
+    
+    if ($stmt->execute()) {
         $error_message = "Account created successfully!";
     } else {
-        $error_message = "Error: " . $sql . "<br>" . $conn->error;
+        $error_message = "Error: " . $stmt->error;
     }
+
+    $stmt->close();
 }
 
+// Login
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $sql = "SELECT * FROM users WHERE username='$username'";
-    $result = $conn->query($sql);
+    // Use prepared statement to fetch user data
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
@@ -48,7 +58,12 @@ if (isset($_POST['login'])) {
             $_SESSION['prefix'] = $row['prefix'];
             $_SESSION['grade'] = $row['grade'];  // Store grade in session if it exists
 
-            header("Location: home.php");
+            // Redirect to different pages based on role
+            if ($row['role'] == 'Admin') {
+                header("Location: admin_dashboard.php");  // Admin dashboard
+            } else {
+                header("Location: home.php");  // General home page
+            }
             exit();
         } else {
             $error_message = "Invalid username or password.";
@@ -56,8 +71,11 @@ if (isset($_POST['login'])) {
     } else {
         $error_message = "Invalid username or password.";
     }
+
+    $stmt->close();
 }
 
+// Guest Login
 if (isset($_POST['guest_login'])) {
     $_SESSION['username'] = "Guest_" . rand(1000, 9999); 
     header("Location: home.php");
@@ -117,6 +135,7 @@ if (isset($_POST['guest_login'])) {
                 <option value="" disabled selected>Select role</option>
                 <option value="Student">Student</option>
                 <option value="Teacher">Teacher</option>
+                <option value="Admin">Admin</option> <!-- Admin Role Added -->
             </select>
         </div>
         <div class="input-field" id="prefix-field" style="display: none;">
