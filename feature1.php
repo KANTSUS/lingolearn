@@ -42,6 +42,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSI
     <div class="main-content">
     <header>
     <h1 class="welcome-text">Welcome Back, <?php echo htmlspecialchars($display_name); ?>!</h1>
+    
     <?php if (isset($_SESSION['role'])): ?>
         <h3 class="role-text">Role: <?php echo htmlspecialchars($_SESSION['role']); ?></h3>
     <?php endif; ?>

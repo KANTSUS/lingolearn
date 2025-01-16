@@ -22,7 +22,8 @@ if ($conn->connect_error) {
 $submitted = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $question_id => $answer) {
-        if (strpos($question_id, 'question_') === 0) {
+        // Only process question inputs
+        if (strpos($question_id, 'question_') === 0 && !empty($answer)) {
             $question_id = str_replace('question_', '', $question_id);
             $stmt = $conn->prepare("INSERT INTO answers (student_username, question_id, answer) VALUES (?, ?, ?)");
             $stmt->bind_param("sis", $_SESSION['username'], $question_id, $answer);
@@ -32,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submitted = true;
 }
 
-// Fetch the lesson based on ID (can dynamically pass lesson ID)
+// Fetch all questions related to the lesson
 $lesson_id = 1;  // Example lesson ID, replace this dynamically based on your session or URL
 $sql = "SELECT * FROM questions WHERE lesson_id = ?";
 $stmt = $conn->prepare($sql);
@@ -40,13 +41,14 @@ $stmt->bind_param("i", $lesson_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Fetch the lesson details
+// Fetch the lesson details for the PDF display
 $lesson_sql = "SELECT * FROM lessons WHERE id = ?";
 $lesson_stmt = $conn->prepare($lesson_sql);
 $lesson_stmt->bind_param("i", $lesson_id);
 $lesson_stmt->execute();
 $lesson_result = $lesson_stmt->get_result();
 $lesson = $lesson_result->fetch_assoc();
+
 ?>
 
 <!DOCTYPE html>
@@ -78,56 +80,67 @@ $lesson = $lesson_result->fetch_assoc();
         </div>
     <?php endif; ?>
 
-    <form action="view_question.php" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
-    <?php 
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) { 
-            $choices = explode(",", $row['choices']);
-            ?>
-            <div class="question-container">
-                <p><strong>Question: </strong><?php echo htmlspecialchars($row['question_text']); ?></p>
-
-                <?php if ($row['question_type'] == 'multiple_choice') {
-                    
-                    $letters = range('a', 'd'); 
-                    foreach ($choices as $index => $choice) { 
-                        $letter = $letters[$index]; 
-                        ?>
-                        <div class="multiple-choice">
-                            <label>
-                                <input type="radio" name="question_<?php echo $row['id']; ?>" value="<?php echo $letter; ?>">
-                                <?php echo $letter . '. ' . htmlspecialchars(trim($choice)); ?>
-                            </label>
-                        </div>
-                    <?php }
-                } else { ?>
-                    <label for="answer_<?php echo $row['id']; ?>">Your Answer:</label>
-                    <input type="text" id="answer_<?php echo $row['id']; ?>" name="question_<?php echo $row['id']; ?>" placeholder="Enter your answer here">
-                <?php } ?>
-            </div>
+    <form action="" method="post" <?php echo $submitted ? 'style="display:none;"' : ''; ?>>
         <?php 
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) { 
+                $choices = explode(",", $row['choices']);
+                ?>
+                <div class="question-container">
+                    <p><strong>Question: </strong><?php echo htmlspecialchars($row['question_text']); ?></p>
+
+                    <?php if ($row['question_type'] == 'multiple_choice') {
+                        // Dynamically generate letters (a, b, c, d)
+                        $letters = range('a', 'd'); // Ensuring only 4 choices (a, b, c, d)
+                        foreach ($choices as $index => $choice) { 
+                            $letter = $letters[$index]; // Get the letter corresponding to the index
+                            ?>
+                            <div class="multiple-choice">
+                                <label>
+                                    <input type="radio" name="question_<?php echo $row['id']; ?>" value="<?php echo $letter; ?>">
+                                    <?php echo $letter . '. ' . htmlspecialchars(trim($choice)); ?>
+                                </label>
+                            </div>
+                        <?php }
+                    } else { ?>
+                        <label for="answer_<?php echo $row['id']; ?>">Your Answer:</label>
+                        <input type="text" id="answer_<?php echo $row['id']; ?>" name="question_<?php echo $row['id']; ?>" placeholder="Enter your answer here">
+                    <?php } ?>
+                </div>
+            <?php 
+            }
+        } else {
+            echo "<p>No questions found in the database.</p>";
         }
-    } else {
-        echo "<p>No questions found in the database.</p>";
-    }
-    ?>
-    <button type="submit" class="btn">Submit Answers</button>
+        ?>
+        <button type="submit" class="btn">Submit Answers</button>
     </form>
 
     <a href="home.php" class="back-button">Back to Homepage</a>
 </div>
 
 <script>
+    // Add an event listener for form submission
+    document.querySelector("form").addEventListener("submit", function(event) {
+        // Check if form is valid, you can add extra validation here
+        if (confirm("Are you sure you want to submit your answers?")) {
+            // Show the success popup
+            document.getElementById('popup').style.display = 'block';
+        } else {
+            event.preventDefault();  // Prevent form submission if user cancels
+        }
+    });
+
+    function closePopup() {
+        window.location.href = 'home.php'; // Redirect after closing popup
+    }
+
     <?php if ($submitted): ?>
         window.onload = function() {
             document.getElementById('popup').style.display = 'block';
         };
-
-        function closePopup() {
-            window.location.href = 'home.php'; 
-        }
     <?php endif; ?>
 </script>
 
-</body>
+</body>  
 </html>
