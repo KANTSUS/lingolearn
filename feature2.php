@@ -24,7 +24,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'Teacher' && isset($_SESSI
         <h2>LingoLearn</h2>
         <ul>
             <li><button id="go-to-feature1">Feature1</button></li>
-            <li><button id="go-to-feature2">Feature2</button></li>
+            <li><button id="go-to-feature2">Pre-Test</button></li>
             <li><button id="go-to-feature3">AI Essay Feedback</button></li>
         </ul>
         <button id="logout-button" onclick="logout()">Logout</button>

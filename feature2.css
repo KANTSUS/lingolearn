@@ -240,3 +240,8 @@ body {
 .template-image:hover {
     transform: scale(1.05);
 }
+
+.description {
+  margin-left: 350px;
+  padding: 20px;
+}
