@@ -2,7 +2,7 @@
 session_start();
 $host = 'localhost';
 $db = 'lingolearn';
-$user = 'root'; 
+$user = 'root';
 $password = ''; 
 
 $conn = new mysqli($host, $user, $password, $db);
@@ -40,30 +40,40 @@ if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Use prepared statement to fetch user data
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Check if the login is for admin
+    if ($username == 'admin' && $password == 'admin123') {
+        $_SESSION['username'] = 'admin';
+        $_SESSION['role'] = 'Admin';
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        if (password_verify($password, $row['password'])) {
-            $_SESSION['username'] = $username;
-            $_SESSION['role'] = $row['role'];
-            $_SESSION['grade'] = $row['grade'];  // Store grade in session if it exists
+        // Redirect to admin dashboard
+        header("Location: admin_dashboard.php");
+        exit();
+    } else {
+        // Use prepared statement to fetch user data for non-admin users
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-            // Redirect to home page
-            header("Location: home.php");  
-            exit();
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            if (password_verify($password, $row['password'])) {
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $row['role'];
+                $_SESSION['grade'] = $row['grade'];  // Store grade in session if it exists
+
+                // Redirect to home page
+                header("Location: home.php");  
+                exit();
+            } else {
+                $error_message = "Invalid username or password.";
+            }
         } else {
             $error_message = "Invalid username or password.";
         }
-    } else {
-        $error_message = "Invalid username or password.";
-    }
 
-    $stmt->close();
+        $stmt->close();
+    }
 }
 
 // Guest Login

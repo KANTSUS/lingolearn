@@ -31,9 +31,16 @@ $grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
         <h2>LingoLearn</h2>
         <ul>
             <li><button id="go-to-feature1">Lesson</button></li>
-            <li><button id="go-to-feature2">Reviewer</button></li>
+            <?php if (!$is_teacher): ?>
+            <!-- Add Pre-test button only for students -->
+            <li><button id="take-pre-test-button" onclick="goToPreTest()">Take Pre-test</button></li>
+            <?php else: ?>
+            <!-- Add Manage Pre-test button only for teachers -->
+            <li><button id="manage-pre-test-button" onclick="goToManagePreTest()">Manage Pre-test</button></li>
+            <?php endif; ?>
             <li><button id="go-to-feature3">AI Essay Feedback</button></li>
         </ul>
+      
         <button id="logout-button" onclick="logout()">Logout</button>
     </div>
 
@@ -73,9 +80,12 @@ $grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
                 <br><br>
                 <p>View the list of students and their submitted answers:</p>
                 <button id="view-student-answers-button" onclick="goToStudentAnswers()">View Student Answers</button>
+                <br><br>
+                
             <?php else: ?>
                 <p>As a student, you can view the lessons and questions uploaded by teachers.</p>
                 <button id="view-questions-button" onclick="goToQuestions()">View Questions</button>
+                <br><br>
             <?php endif; ?>
         </section>
     </div>
@@ -87,10 +97,6 @@ $grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
 
         document.getElementById('go-to-feature1').addEventListener('click', function() {
             window.location.href = 'feature1.php';
-        });
-
-        document.getElementById('go-to-feature2').addEventListener('click', function() {
-            window.location.href = 'feature2.php';
         });
 
         document.getElementById('go-to-feature3').addEventListener('click', function() {
@@ -107,6 +113,17 @@ $grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
 
         function goToStudentAnswers() {
             window.location.href = 'view_student_answers.php';
+        }
+
+        function goToPreTest() {
+            const confirmNavigation = confirm("Are you sure you want to take the pre-test?");
+            if (confirmNavigation) {
+                window.location.href = 'pre_test.php';
+            }
+        }
+
+        function goToManagePreTest() {
+            window.location.href = 'manage_pre_test.php';
         }
     </script>
     <script src="home.js"></script>

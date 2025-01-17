@@ -1,37 +1,22 @@
 <?php
+require_once 'db_connection.php'; // Adjust the path to your connection file
 session_start();
-if (!isset($_SESSION['username']) || $_SESSION['role'] != 'Teacher') {
+
+// Check if the user is a teacher
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Teacher') {
     header("Location: login.php");
     exit();
 }
 
-// Connect to the database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "lingolearn";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Get the selected student's username
-$student = isset($_GET['student']) ? $_GET['student'] : '';
-if (empty($student)) {
-    header("Location: view_students.php");
-    exit();
-}
-
-// Fetch answers for the selected student
-$sql = "SELECT q.question_text, a.answer 
-        FROM answers a 
-        JOIN questions q ON a.question_id = q.id 
-        WHERE a.student_username = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $student);
+// Fetch all student answers for the pre-test
+$stmt = $pdo->prepare("
+    SELECT ps.student_username, ps.question_id, ps.student_answer, ps.is_correct, ps.grade, pq.question_text 
+    FROM pre_test_results ps
+    JOIN pre_test_questions pq ON ps.question_id = pq.id
+");
 $stmt->execute();
-$result = $stmt->get_result();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -39,91 +24,58 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($student); ?>'s Answers</title>
+    <title>View Student Answers</title>
     <style>
+        /* Add styles for better visualization */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            margin: 20px;
         }
-
-        .container {
-            width: 80%;
-            margin: 30px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
         h1 {
             text-align: center;
-            color: #333;
         }
-
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
+        .student-answer {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f2f2f2;
+        .question-text {
             font-weight: bold;
-            color: #333;
         }
-
-        td {
-            background-color: #f9f9f9;
+        .answer {
+            margin-top: 5px;
         }
-
-        tr:nth-child(even) td {
-            background-color: #f1f1f1;
+        .correct {
+            color: green;
         }
-
-        .back-button {
-            display: inline-block;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #007bff;
-            text-decoration: none;
+        .incorrect {
+            color: red;
         }
-
-        .back-button:hover {
-            text-decoration: underline;
+        .grade {
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+    <h1>View Student Answers</h1>
 
-<div class="container">
-    <h1>Answers by <?php echo htmlspecialchars($student); ?></h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Question</th>
-                <th>Answer</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($row = $result->fetch_assoc()) { ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['question_text']); ?></td>
-                    <td><?php echo htmlspecialchars($row['answer']); ?></td>
-                </tr>
-            <?php } ?>
-        </tbody>
-    </table>
-    <a href="view_students.php" class="back-button">Back to Students List</a>
-</div>
-
+    <?php if ($results): ?>
+        <?php foreach ($results as $result): ?>
+            <div class="student-answer">
+                <p class="question-text"><?php echo htmlspecialchars($result['question_text']); ?></p>
+                <p class="answer">Student's Answer: <?php echo htmlspecialchars($result['student_answer']); ?></p>
+                <p class="answer <?php echo $result['is_correct'] ? 'correct' : 'incorrect'; ?>">
+                    <?php echo $result['is_correct'] ? 'Correct' : 'Incorrect'; ?>
+                </p>
+                <p class="grade">Grade: <?php echo round($result['grade'], 2); ?>%</p>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>No student answers available.</p>
+    <?php endif; ?>
+    
 </body>
 </html>
