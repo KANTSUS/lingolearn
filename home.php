@@ -24,7 +24,7 @@ $grade = !$is_teacher && isset($_SESSION['grade']) ? $_SESSION['grade'] : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homepage</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="homes.css">
 </head>
 <body>
     <div class="sidebar">

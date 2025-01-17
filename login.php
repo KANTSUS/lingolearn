@@ -18,17 +18,13 @@ if (isset($_POST['create_account'])) {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
-    $role = $_POST['role'];
-    $prefix = isset($_POST['prefix']) ? $_POST['prefix'] : null;
-    $grade = null;
-
-    if ($role === 'Student' && isset($_POST['grade'])) {
-        $grade = $_POST['grade'];  // Only set grade if the role is 'Student'
-    }
+    $role = 'Student';  // Only Student role
+    $prefix = null;
+    $grade = $_POST['grade'];  // Grade is required for Student
 
     // Use prepared statement to insert data
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, prefix, grade) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssi", $username, $email, $password, $role, $prefix, $grade);
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, grade) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssi", $username, $email, $password, $role, $grade);
     
     if ($stmt->execute()) {
         $error_message = "Account created successfully!";
@@ -55,15 +51,10 @@ if (isset($_POST['login'])) {
         if (password_verify($password, $row['password'])) {
             $_SESSION['username'] = $username;
             $_SESSION['role'] = $row['role'];
-            $_SESSION['prefix'] = $row['prefix'];
             $_SESSION['grade'] = $row['grade'];  // Store grade in session if it exists
 
-            // Redirect to different pages based on role
-            if ($row['role'] == 'Admin') {
-                header("Location: admin_dashboard.php");  // Admin dashboard
-            } else {
-                header("Location: home.php");  // General home page
-            }
+            // Redirect to home page
+            header("Location: home.php");  
             exit();
         } else {
             $error_message = "Invalid username or password.";
@@ -130,26 +121,8 @@ if (isset($_POST['guest_login'])) {
             <input type="password" name="password" placeholder="Password" required>
         </div>
         <div class="input-field">
-            <label for="role">Role:</label>
-            <select name="role" id="role" onchange="toggleFields()" required>
-                <option value="" disabled selected>Select role</option>
-                <option value="Student">Student</option>
-                <option value="Teacher">Teacher</option>
-                <option value="Admin">Admin</option> <!-- Admin Role Added -->
-            </select>
-        </div>
-        <div class="input-field" id="prefix-field" style="display: none;">
-            <label for="prefix">Prefix:</label>
-            <select name="prefix" id="prefix">
-                <option value="" disabled selected>Select prefix</option>
-                <option value="Mr.">Mr.</option>
-                <option value="Mrs.">Mrs.</option>
-                <option value="Ms.">Ms.</option>
-            </select>
-        </div>
-        <div class="input-field" id="grade-field" style="display: none;">
             <label for="grade">Grade:</label>
-            <select name="grade" id="grade">
+            <select name="grade" id="grade" required>
                 <option value="" disabled selected>Select grade</option>
                 <option value="7">Grade 7</option>
                 <option value="8">Grade 8</option>
@@ -170,22 +143,7 @@ if (isset($_POST['guest_login'])) {
     </div>
 
     <script>
-        function toggleFields() {
-            const role = document.getElementById('role').value;
-            const prefixField = document.getElementById('prefix-field');
-            const gradeField = document.getElementById('grade-field');
-
-            if (role === 'Teacher') {
-                prefixField.style.display = 'block';
-                gradeField.style.display = 'none';  // Hide grade for teachers
-            } else if (role === 'Student') {
-                prefixField.style.display = 'none';
-                gradeField.style.display = 'block';  // Show grade for students
-            } else {
-                prefixField.style.display = 'none';
-                gradeField.style.display = 'none';
-            }
-        }
+        // No need to toggle role fields anymore
     </script>
     <script src="login.js"></script>
 </body>

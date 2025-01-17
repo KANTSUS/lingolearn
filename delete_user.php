@@ -1,42 +1,42 @@
 <?php
 session_start();
 
-// Ensure the user is logged in as Admin
+// Check if the user is an admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    header("Location: home.php"); // Redirect non-admins
+    // Redirect to home page if not an admin
+    header("Location: home.php");
     exit();
 }
 
-if (isset($_GET['id'])) {
-    $user_id = $_GET['id'];
+$host = 'localhost';
+$db = 'lingolearn';
+$user = 'root';
+$password = '';
+$conn = new mysqli($host, $user, $password, $db);
 
-    // Database connection
-    $host = 'localhost';
-    $db = 'lingolearn';
-    $user = 'root'; 
-    $password = ''; 
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
-    $conn = new mysqli($host, $user, $password, $db);
+// Check if user_id is set in the POST request
+if (isset($_POST['user_id'])) {
+    $user_id = $_POST['user_id'];
 
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
-
-    // SQL to delete the user
-    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    // SQL query to delete the user
+    $delete_query = "DELETE FROM users WHERE id = ?";
+    $stmt = $conn->prepare($delete_query);
     $stmt->bind_param("i", $user_id);
 
     if ($stmt->execute()) {
-        // Redirect back to admin dashboard after deletion
-        header("Location: admin_dashboard.php");
-        exit();
+        echo "User deleted successfully.";
     } else {
-        echo "Error: " . $stmt->error;
+        echo "Error deleting user: " . $stmt->error;
     }
 
     $stmt->close();
-    $conn->close();
 } else {
-    echo "No user selected for deletion.";
+    echo "No user ID provided.";
 }
+
+$conn->close();
 ?>
